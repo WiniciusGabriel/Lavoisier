@@ -44,3 +44,36 @@ Lavoisier/
 │   │   └── substitution_screen.dart
 │   └── main.dart
 └── README.md
+
+Etapa-03
+
+# Lavoisier - Aplicativo de Substituição Nutricional
+
+## 1. Nome da Aplicação
+**Lavoisier**
+
+## 2. Problema
+Pacientes em acompanhamento nutricional recebem planos alimentares com alimentos específicos, mas no dia a dia frequentemente não têm acesso a esses alimentos (indisponibilidade, custo, restrição alimentar, preferência pessoal). Sem orientação técnica no momento da troca, o paciente costuma substituir de forma intuitiva — o que pode desequilibrar macros e calorias e comprometer o resultado do plano.
+
+## 3. Objetivo Geral
+Desenvolver um aplicativo mobile que permita ao paciente substituir um alimento prescrito por um equivalente nutricional, mantendo a proporção de macronutrientes e calorias definida pelo nutricionista.
+
+## 4. Estrutura de Telas e Navegação Implementada
+O aplicativo utiliza rotas nomeadas (`Navigator.pushNamed`) para garantir uma navegação fluida:
+* **Tela de Login / Cadastro (`/`):** Autenticação inicial do utilizador.
+* **Home do Paciente (`/home`):** Exibe a meta diária de calorias/proteínas e as refeições do dia.
+* **Detalhe da Refeição (`/detail`):** Mostra os ingredientes prescritos e respetivos valores nutricionais.
+* **Substituição de Alimentos (`/substitution`):** Lista opções equivalentes validadas para a troca do alimento.
+* **Histórico de Substituições (`/history`):** Registo de todas as trocas alimentares efetuadas pelo paciente.
+
+## 5. Tecnologias Utilizadas
+* **Flutter / Dart** (Framework de desenvolvimento multiplataforma)
+* **Material Design** (Componentes de interface e UX)
+
+## 6. Instruções para Execução
+1. Certifique-se de ter o Flutter instalado na sua máquina.
+2. Abra a pasta raiz do projeto no terminal ou editor (ex: VS Code / Android Studio).
+3. Inicie um emulador Android ou ligue um dispositivo físico.
+4. Execute o comando para iniciar a aplicação:
+   ```bash
+   flutter run

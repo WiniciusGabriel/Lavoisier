@@ -1,27 +1,54 @@
 import 'package:flutter/material.dart';
 
-class SubstitutionScreen extends StatelessWidget {
-  const SubstitutionScreen({super.key});
+class SubstituicaoScreen extends StatelessWidget {
+  const SubstituicaoScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final List<String> equivalentes = ['Batata Doce (180g)', 'Mandioquinha (140g)', 'Macarrão Integral (130g)'];
+    // Lista de alimentos equivalentes sugeridos
+    final List<Map<String, String>> alternativas = [
+      {'nome': 'Batata Doce', 'quantidade': '160g', 'calorias': '190 kcal'},
+      {'nome': 'Mandioquinha', 'quantidade': '140g', 'calorias': '185 kcal'},
+      {'nome': 'Macarrão Integral', 'quantidade': '130g', 'calorias': '195 kcal'},
+    ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Opções de Substituição Equivalentes')),
+      appBar: AppBar(
+        title: const Text('Selecione a Substituição'),
+        backgroundColor: Colors.green,
+      ),
       body: ListView.builder(
-        itemCount: equivalentes.length,
+        padding: const EdgeInsets.all(16.0),
+        itemCount: alternativas.length,
         itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(equivalentes[index]),
-            trailing: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Substituição realizada com sucesso!')),
-                );
-                Navigator.popUntil(context, ModalRoute.withName('/home'));
-              },
-              child: const Text('Selecionar'),
+          final item = alternativas[index];
+          return Card(
+            elevation: 2,
+            margin: const EdgeInsets.only(bottom: 12.0),
+            child: ListTile(
+              title: Text(
+                item['nome']!,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              subtitle: Text('Quantidade: ${item['quantidade']} | ${item['calorias']}'),
+              trailing: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  // Feedback visual imediato para o utilizador (UX)
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Substituído com sucesso por ${item['nome']}!'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                  // Retorna para a tela anterior após selecionar
+                  Navigator.pop(context);
+                },
+                child: const Text('Selecionar'),
+              ),
             ),
           );
         },

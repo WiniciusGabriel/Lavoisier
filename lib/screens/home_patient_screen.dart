@@ -7,10 +7,12 @@ class HomePatientScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home do Paciente - Plano do Dia'),
+        title: const Text('Plano Nutricional do Dia'),
+        backgroundColor: Colors.green,
         actions: [
           IconButton(
             icon: const Icon(Icons.history),
+            tooltip: 'Ver Histórico',
             onPressed: () => Navigator.pushNamed(context, '/history'),
           ),
         ],
@@ -19,18 +21,32 @@ class HomePatientScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         children: [
           const Card(
-            color: Colors.greenAccent,
+            color: Color(0xFFe8f5e9),
+            elevation: 2,
             child: Padding(
               padding: EdgeInsets.all(16.0),
-              child: Text('Meta Diária: 1800 kcal | 140g Proteína', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Meta Diária', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  SizedBox(height: 4),
+                  Text('1800 kcal | 140g Proteína', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 10),
-          ListTile(
-            title: const Text('Almoço: Frango com Arroz e Salada'),
-            subtitle: const Text('Toque para ver detalhes e substituir itens'),
-            trailing: const Icon(Icons.arrow_forward),
-            onTap: () => Navigator.pushNamed(context, '/detail'),
+          const SizedBox(height: 16),
+          const Text('Refeições de Hoje', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Card(
+            elevation: 2,
+            child: ListTile(
+              leading: const Icon(Icons.restaurant, color: Colors.green, size: 32),
+              title: const Text('Almoço: Frango com Arroz e Salada', style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: const Text('Toque para ver detalhes e opções de substituição'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () => Navigator.pushNamed(context, '/detail'),
+            ),
           ),
         ],
       ),

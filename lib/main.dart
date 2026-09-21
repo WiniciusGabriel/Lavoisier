@@ -23,7 +23,7 @@ class LavoisierApp extends StatelessWidget {
         '/': (context) => const LoginScreen(),
         '/home': (context) => const HomePatientScreen(),
         '/detail': (context) => const MealDetailScreen(),
-        '/substitution': (context) => const SubstitutionScreen(),
+        '/substitution': (context) => const SubstituicaoScreen(),
         '/history': (context) => const HistoryScreen(),
       },
     );

@@ -6,20 +6,28 @@ class HistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<String> historico = [
-      'Troca: Arroz Integral por Batata Doce',
-      'Troca: Frango por Patinho Moído'
+      'Troca realizada: Arroz Integral por Batata Doce (Hoje)',
+      'Troca realizada: Frango por Patinho Moído (Ontem)',
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Histórico de Substituições')),
+      appBar: AppBar(
+        title: const Text('Histórico de Substituições'),
+        backgroundColor: Colors.green,
+      ),
       body: ListView.builder(
+        padding: const EdgeInsets.all(16.0),
         itemCount: historico.length,
         itemBuilder: (context, index) {
           return Card(
-            margin: const EdgeInsets.all(8.0),
+            elevation: 2,
+            margin: const EdgeInsets.only(bottom: 12.0),
             child: ListTile(
-              leading: const Icon(Icons.history, color: Colors.blue),
-              title: Text(historico[index]),
+              leading: const Icon(Icons.history, color: Colors.green),
+              title: Text(
+                historico[index],
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+              ),
             ),
           );
         },
