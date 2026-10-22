@@ -1,19 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Pacote adicionado
+import 'login_screen.dart';
 
-class HomePatientScreen extends StatelessWidget {
+
+class HomePatientScreen extends StatefulWidget {
   const HomePatientScreen({super.key});
 
+  @override
+  State<HomePatientScreen> createState() => _HomePatientScreenState();
+}
+
+class _HomePatientScreenState extends State<HomePatientScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Plano Nutricional do Dia'),
+        title: const Text('Plano Nutricional do Dia', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.green,
         actions: [
+          // Botão original de Histórico
           IconButton(
             icon: const Icon(Icons.history),
             tooltip: 'Ver Histórico',
             onPressed: () => Navigator.pushNamed(context, '/history'),
+          ),
+          
+          IconButton(
+            icon: const Icon(Icons.logout),
+            color: const Color.fromARGB(255, 93, 85, 85),
+            tooltip: 'Sair da Conta',
+            // MODIFICADO: Transformado em async para limpar os dados salvos
+            onPressed: () async {
+              
+              // 1. Instancia o SharedPreferences
+              final prefs = await SharedPreferences.getInstance();
+              
+              // 2. REMOVER DADOS: Apaga o e-mail que foi salvo na tela de login
+              await prefs.remove('usuario_email');
+              
+              // 3. Verifica se o widget está montado antes de mudar de tela
+              if (mounted) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
+              }
+            },
           ),
         ],
       ),

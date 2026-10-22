@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 
-class MealDetailScreen extends StatelessWidget {
+class MealDetailScreen extends StatefulWidget {
   const MealDetailScreen({super.key});
 
+  @override
+  State<MealDetailScreen> createState() => _MealDetailScreenState();
+}
+
+class _MealDetailScreenState extends State<MealDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detalhe da Refeição'),
+        title: const Text('Detalhe da Refeição', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.green,
       ),
       body: Padding(
@@ -43,7 +48,7 @@ class MealDetailScreen extends StatelessWidget {
               ),
               onPressed: () => Navigator.pushNamed(context, '/substitution'),
               icon: const Icon(Icons.swap_horiz),
-              label: const Text('Substituir Alimento', style: TextStyle(fontSize: 16)),
+              label: const Text('Substituir Alimento', style: TextStyle(color:Colors.black)),
             ),
           ],
         ),

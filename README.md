@@ -77,3 +77,6 @@ O aplicativo utiliza rotas nomeadas (`Navigator.pushNamed`) para garantir uma na
 4. Execute o comando para iniciar a aplicação:
    ```bash
    flutter run
+
+## Etapa 04 - Persistência de Dados
+Nesta etapa, foi implementado o armazenamento local da aplicação Lavoisier utilizando o pacote `shared_preferences`. A aplicação realiza operações completas de CRUD (Criação, Recuperação, Atualização e Remoção) na memória do dispositivo, garantindo que o e-mail de acesso e o histórico de substituições nutricionais permanecem disponíveis mesmo após o encerramento total da aplicação.
