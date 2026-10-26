@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../app_data.dart'; 
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../app_data.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -10,74 +12,107 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  // Variável local para armazenar a lista lida do dispositivo
-  List<String> _historico = [];
+  List<String> historico = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _carregarHistorico(); // Busca os dados assim que a tela abre
+    _carregarHistorico();
   }
-  // RECUPERAR DADOS: Lê o histórico salvo no SharedPreferences
+
   Future<void> _carregarHistorico() async {
-    final prefs = await SharedPreferences.getInstance();
-    // Usa getStringList para pegar a lista de textos. Se não existir, retorna lista vazia []
-    final historicoSalvo = prefs.getStringList('historico_refeicoes') ?? [];
-    
+    setState(() => isLoading = true);
+    final String urlBackend = kIsWeb 
+        ? 'http://localhost:3000/api/historico' 
+        : 'http://10.0.2.2:3000/api/historico';
+
+    try {
+      final response = await http.get(Uri.parse(urlBackend));
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          historico = data.map((item) => item['mensagem'].toString()).toList();
+          AppData.historicoGlobal = historico;
+          isLoading = false;
+        });
+      } else {
+        _usarHistoricoLocal();
+      }
+    } catch (e) {
+      _usarHistoricoLocal();
+    }
+  }
+
+  void _usarHistoricoLocal() {
     setState(() {
-      _historico = historicoSalvo;
-      // Mantém a sua variável global sincronizada, caso outra tela dependa dela
-      AppData.historicoGlobal = historicoSalvo;
+      historico = List.from(AppData.historicoGlobal);
+      isLoading = false;
     });
   }
-  // REMOVER DADOS: limpa o historico do sharedPreferences e da variável local
-  Future<void> _limparHistorico() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('historico_refeicoes');
+
+  // Função para eliminar um item específico da lista
+  void _eliminarItem(int index) {
     setState(() {
-      _historico.clear();
-      AppData.historicoGlobal.clear();
+      historico.removeAt(index);
+      AppData.historicoGlobal = historico; // Atualiza a lista global
     });
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Substituição eliminada com sucesso!'),
+        backgroundColor: Colors.redAccent,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Histórico de Substituições', style: TextStyle(color: Color.fromARGB(255, 5, 5, 5))),
+        title: const Text('Histórico de Substituições', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.green,
         actions: [
-          // Botão para limpar o histórico (ajuda no CRUD - Remover Dados
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            onPressed: _limparHistorico,
-            tooltip: 'Limpar Histórico',
-          ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _carregarHistorico, 
+            onPressed: _carregarHistorico,
+            tooltip: 'Atualizar Histórico',
           ),
         ],
       ),
-      body: _historico.isEmpty
-          ? const Center(child: Text('Nenhuma substituição registrada.'))
-          : ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: _historico.length, // Usa a lista carregada do aparelho
-              itemBuilder: (context, index) {
-                return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.only(bottom: 12.0),
-                  child: ListTile(
-                    leading: const Icon(Icons.history, color: Colors.green),
-                    title: Text(
-                      _historico[index],
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                    ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : historico.isEmpty
+              ? const Center(
+                  child: Text(
+                    'Nenhuma substituição registada.',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
-                );
-              },
-            ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: historico.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      elevation: 2,
+                      margin: const EdgeInsets.only(bottom: 12.0),
+                      child: ListTile(
+                        leading: const Icon(Icons.check_circle, color: Colors.green),
+                        title: Text(
+                          historico[index],
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                        ),
+                        // NOVO: Botão de lixeira à direita de cada item
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          onPressed: () => _eliminarItem(index),
+                          tooltip: 'Eliminar Registo',
+                        ),
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }

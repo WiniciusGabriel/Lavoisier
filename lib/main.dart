@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_patient_screen.dart';
-import 'screens/meal_detail_screen.dart';
-import 'screens/substitution_screen.dart';
 import 'screens/history_screen.dart';
 
 void main() {
@@ -18,13 +16,14 @@ class LavoisierApp extends StatelessWidget {
       title: 'Lavoisier Nutrição',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.green),
+      // Define o ecrã inicial como o Login
       initialRoute: '/',
       routes: {
         '/': (context) => const LoginScreen(),
         '/home': (context) => const HomePatientScreen(),
-        '/detail': (context) => const MealDetailScreen(),
-        '/substitution': (context) => const SubstituicaoScreen(),
         '/history': (context) => const HistoryScreen(),
+        // Nota: A rota '/substitution' foi removida daqui porque agora 
+        // ela é chamada passando parâmetros diretamente via Navigator.push na busca.
       },
     );
   }

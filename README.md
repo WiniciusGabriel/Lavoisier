@@ -80,3 +80,8 @@ O aplicativo utiliza rotas nomeadas (`Navigator.pushNamed`) para garantir uma na
 
 ## Etapa 04 - Persistência de Dados
 Nesta etapa, foi implementado o armazenamento local da aplicação Lavoisier utilizando o pacote `shared_preferences`. A aplicação realiza operações completas de CRUD (Criação, Recuperação, Atualização e Remoção) na memória do dispositivo, garantindo que o e-mail de acesso e o histórico de substituições nutricionais permanecem disponíveis mesmo após o encerramento total da aplicação.
+
+## Etapa 05 - Integração Funcional
+Nesta etapa, o projeto atingiu sua primeira versão 100% funcional. A interface em Flutter foi totalmente integrada com um backend em Node.js através de uma API REST. 
+Foram implementados fluxos completos de negócio (pesquisa de equivalência nutricional, registro de trocas, cálculo de economia e exclusão de histórico), com tratamento de erros, persistência local e feedback visual.
+Para instruções detalhadas de execução e decisões técnicas, consulte o arquivo `docs/etapa-05.md`.
