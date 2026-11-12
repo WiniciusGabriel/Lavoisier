@@ -85,3 +85,8 @@ Nesta etapa, foi implementado o armazenamento local da aplicação Lavoisier uti
 Nesta etapa, o projeto atingiu sua primeira versão 100% funcional. A interface em Flutter foi totalmente integrada com um backend em Node.js através de uma API REST. 
 Foram implementados fluxos completos de negócio (pesquisa de equivalência nutricional, registro de trocas, cálculo de economia e exclusão de histórico), com tratamento de erros, persistência local e feedback visual.
 Para instruções detalhadas de execução e decisões técnicas, consulte o arquivo `docs/etapa-05.md`.
+
+Etapa 6: Integração com Serviço Externo (Firebase Realtime Database)
+Nesta etapa, o aplicativo Lavoisier Nutrição foi integrado ao Firebase Realtime Database via API REST utilizando o pacote `http` do Flutter. 
+* Operações implementadas: **GET** (consulta de histórico), **POST** (envio de novas substituições) e **DELETE** (remoção de registos).
+* Tratamento completo de estados de interface: **Carregamento**, **Sucesso**, **Erro** e **Ausência de dados**.

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../app_data.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -12,8 +10,14 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  List<String> historico = [];
-  bool isLoading = true;
+  List<Map<String, dynamic>> historico = [];
+  // Variáveis de Estado da Tela
+  bool isLoading = true; // Carregamento
+  String errorMessage = ''; // Erro
+
+  // URL do Firebase Realtime Database (sem barra no final)
+  final String baseUrl =
+      'https://lavoisier-94c3e-default-rtdb.firebaseio.com';
 
   @override
   void initState() {
@@ -21,57 +25,98 @@ class _HistoryScreenState extends State<HistoryScreen> {
     _carregarHistorico();
   }
 
+  // OPERAÇÃO 1: CONSULTA DE DADOS (GET)
   Future<void> _carregarHistorico() async {
-    setState(() => isLoading = true);
-    final String urlBackend = kIsWeb 
-        ? 'http://localhost:3000/api/historico' 
-        : 'http://10.0.2.2:3000/api/historico';
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
 
     try {
-      final response = await http.get(Uri.parse(urlBackend));
+      final response = await http.get(Uri.parse('$baseUrl/historico.json'));
+
+      if (!mounted) return;
+
       if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
+        final decoded = jsonDecode(response.body);
+        final List<Map<String, dynamic>> lista = [];
+
+        // O Firebase devolve null (vazio) ou um mapa {id: {mensagem: ...}}
+        if (decoded != null) {
+          (decoded as Map<String, dynamic>).forEach((key, value) {
+            lista.add({'id': key, ...Map<String, dynamic>.from(value)});
+          });
+        }
+
         setState(() {
-          historico = data.map((item) => item['mensagem'].toString()).toList();
-          AppData.historicoGlobal = historico;
+          historico = lista.reversed.toList(); // mais recentes primeiro
           isLoading = false;
         });
       } else {
-        _usarHistoricoLocal();
+        setState(() {
+          errorMessage =
+              'Erro ao buscar dados do servidor (Código: ${response.statusCode})';
+          isLoading = false;
+        });
       }
     } catch (e) {
-      _usarHistoricoLocal();
+      if (!mounted) return;
+      setState(() {
+        errorMessage = 'Falha na comunicação por rede. Verifique sua conexão.';
+        isLoading = false;
+      });
     }
   }
 
-  void _usarHistoricoLocal() {
-    setState(() {
-      historico = List.from(AppData.historicoGlobal);
-      isLoading = false;
-    });
-  }
-
-  // Função para eliminar um item específico da lista
-  void _eliminarItem(int index) {
-    setState(() {
-      historico.removeAt(index);
-      AppData.historicoGlobal = historico; // Atualiza a lista global
-    });
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Substituição eliminada com sucesso!'),
-        backgroundColor: Colors.redAccent,
-        duration: Duration(seconds: 2),
-      ),
+  // OPERAÇÃO 2: REMOÇÃO DE DADOS (DELETE)
+  Future<void> _eliminarItem(String id, int index) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+
+    try {
+      final response =
+          await http.delete(Uri.parse('$baseUrl/historico/$id.json'));
+
+      if (!mounted) return;
+      Navigator.pop(context); // Fecha o loading
+
+      if (response.statusCode == 200) {
+        setState(() {
+          historico.removeAt(index);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Substituição eliminada da nuvem!'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      } else {
+        throw Exception('Erro ao deletar');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      // Fecha o loading apenas se ainda estiver aberto
+      if (Navigator.of(context).canPop()) {
+        Navigator.pop(context);
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erro ao excluir item no servidor.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Histórico de Substituições', style: TextStyle(color: Colors.black)),
+        title: const Text('Histórico de Substituições',
+            style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.green,
         actions: [
           IconButton(
@@ -81,38 +126,84 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : historico.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Nenhuma substituição registada.',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16.0),
-                  itemCount: historico.length,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      elevation: 2,
-                      margin: const EdgeInsets.only(bottom: 12.0),
-                      child: ListTile(
-                        leading: const Icon(Icons.check_circle, color: Colors.green),
-                        title: Text(
-                          historico[index],
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                        ),
-                        // NOVO: Botão de lixeira à direita de cada item
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
-                          onPressed: () => _eliminarItem(index),
-                          tooltip: 'Eliminar Registo',
-                        ),
-                      ),
-                    );
-                  },
-                ),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    // Carregamento
+    if (isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: Colors.green),
+            SizedBox(height: 16),
+            Text('Sincronizando com o servidor...'),
+          ],
+        ),
+      );
+    }
+
+    // Erro
+    if (errorMessage.isNotEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 60),
+              const SizedBox(height: 16),
+              Text(
+                errorMessage,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _carregarHistorico,
+                child: const Text('Tentar Novamente'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Ausência de dados
+    if (historico.isEmpty) {
+      return const Center(
+        child: Text(
+          'Nenhuma substituição registada na nuvem.',
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+      );
+    }
+
+    // Sucesso
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: historico.length,
+      itemBuilder: (context, index) {
+        final item = historico[index];
+        return Card(
+          elevation: 2,
+          margin: const EdgeInsets.only(bottom: 12.0),
+          child: ListTile(
+            leading: const Icon(Icons.cloud_done, color: Colors.green),
+            title: Text(
+              item['mensagem'] ?? '',
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              onPressed: () => _eliminarItem(item['id'].toString(), index),
+              tooltip: 'Eliminar Registo do Servidor',
+            ),
+          ),
+        );
+      },
     );
   }
 }
